@@ -7,9 +7,21 @@
 
 const uint8_t dxl_dir_pin = 2; // DYNAMIXEL Shield DIR PIN
 
-SoftwareSerial soft_serial(7, 8); // DYNAMIXELShield UART RX/TX
+SoftwareSerial soft_serial(19, 18); // DYNAMIXELShield UART RX/TX
 Dynamixel2Arduino dxl(DXL_SERIAL, dxl_dir_pin);
 
+#define TORQUE_ENABLE_ADDR          64
+#define TORQUE_ENABLE_ADDR_LEN      1
+#define LED_ADDR                    25
+#define LED_ADDR_LEN                1
+#define GOAL_POSITION_ADDR          116
+#define GOAL_POSITION_ADDR_LEN      2
+#define PRESENT_POSITION_ADDR       132
+#define PRESENT_POSITION_ADDR_LEN   4
+#define TIMEOUT 10
+
+const uint8_t turn_on = 1;
+const uint8_t turn_off = 0;
 
 void setup() {
   DEBUG_SERIAL.begin(115700);
@@ -44,6 +56,16 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
-}
+  uint8_t input = 0;
+  delay(10000);
+  input = 1;
+  if(input == 1) {
+    dxl.torqueOn(2);
+    dxl.setGoalPosition(2, 2048, UNIT_RAW);
+    while(dxl.getPresentPosition(2) != 2048)
+    {
+      DEBUG_SERIAL.print("Turning...");
+      delay(10);
+    } 
+    }
+  }
