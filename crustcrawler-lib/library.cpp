@@ -63,7 +63,87 @@ void CrustCrawler::move_joint(uint8_t id, uint16_t theta, char type) {
         _pSerial->setGoalPosition(id, theta, UNIT_DEGREE);
     }
     else {
-        _debug_pSerial->println("ERROR: Not known type");
+        _debug_pSerial->println("ERROR: Input unknown type");
     }
 }
-void
+void CrustCrawler::move_joints(uint16_t theta1, uint16_t theta2, uint16_t theta3, bool grip_open, char type) {
+    uint16_t stor_arr[3] = {theta1, theta2, theta3};
+    if(type == 'R') {
+        for(int i = 0; i < _EXPT_NUM_SERVOS - 2; i++) {
+            CrustCrawler::move_joint(i, stor_arr[i]);
+        }
+        CrustCrawler::grip(grip_open);
+    }
+    else if(type == 'D') {
+        for(int i = 0; i < _EXPT_NUM_SERVOS - 2; i++) {
+            CrustCrawler::move_joint(i, stor_arr[i], 'D');
+        }
+        CrustCrawler::grip(grip_open);
+    }
+    else {
+        _debug_pSerial->println("ERROR: Input unknown type")
+    }
+}
+uint32_t CrustCrawler::checkPos(uint8_t id) {
+    _pSerial->getPresentPosition(id);
+}
+
+void CrustCrawler::setProfileVel(uint8_t id, uint16_t val) {
+    _pSerial->writeControlTableItem(0x70, id, val);
+}
+
+void CrustCrawler::setProfileAcc(uint8_t id, uint16_t val) {
+    _pSerial->writeControlTableItem(0x6C, id, val);
+}
+
+void CrustCrawler::setMaxvel(uint8_t id, uint16_t val) {
+    _pSerial->writeControlTableItem(0x2C, id, val);
+}
+
+void CrustCrawler::setMaxAcc(uint8_t id, uint16_t val) {
+    _pSerial->writeControlTableItem(0x28, id, val);
+}
+
+void CrustCrawler::setPGain(uint8_t id, uint16_t val) {
+    _pSerial->writeControlTableItem(0x50, id, val);
+}
+
+void CrustCrawler::setPGainAll(uint16_t val) {
+    for(int i = 0; i < _EXPT_NUM_SERVOS, i++) {
+        _pSerial->writeControlTableItem(0x50, i, val);
+    }
+}
+
+void CrustCrawler::setIGain(uint8_t id, uint16_t val) {
+    _pSerial->writeControlTableItem(0x52, id, val);
+}
+
+void CrustCrawler::setIGainAll(uint16_t val) {
+    for(int i = 0; i < _EXPT_NUM_SERVOS; i++) {
+        _pSerial->writeControlTableItem(0x52, i, val);
+    }
+}
+
+void CrustCrawler::setDGain(uint8_t id, uint16_t val) {
+    _pSerial->writeControlTableItem(0x54, id, val);
+}
+
+void CrustCrawler::setDGainAll(uint16_t val) {
+    for(int i = 0; i < _EXPT_NUM_SERVOS; i++) {
+        _pSerial->writeControlTableItem(0x54, i, val);
+    }
+}
+
+void CrustCrawler::_clearBuffer() {
+    while(_debug_pSerial->available()) {
+        _debug_pSerial->read();
+    }
+}
+
+void CrustCrawler::_statusPacket(uint16_t dataLength) {
+    //Unknown right now
+}
+
+void CrustCrawler::_verifyChecksum(uint16_t dataLength) {
+    //Unknown right now
+}

@@ -8,6 +8,7 @@
 #define CRUSTCRAWLER_H
 
 #define BUF_SIZE 40 //Buffer size
+#define BROADCAST_ID 0xFE
 
 class CrustCrawler {
 private:
@@ -17,23 +18,22 @@ private:
     const uint16_t _ID_ONE_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor one
     const uint16_t _ID_TWO_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor two
     const uint16_t _ID_THREE_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor three
-    const uint16_t _ID_FOUR_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor four (gripper 1)
-    const uint16_t _ID_FIVE_EXPOS[5] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor five (gripper 2)
+    const uint16_t _ID_GRIP_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor four (gripper 1)
+
 
 public:
     CrustCrawler(); //Standard constructor
 
-    void init_arm(HardwareSerial &dxl_ser, uint8_t _controlPin); //Initialize the object with communication serial
+    void init_arm(HardwareSerial &dxl_ser, HardwareSerial &debug_ser); //Initialize the object with communication serial
     void shutdown_arm();
-    void enableTorqueAll(bool enable); //Enable torque on all motors
-    void disableTorqueAll(bool disable); //Disable torque on all motors
-    void enableTorqueOne(bool enable, uint8_t id); //Enable torque on one motor
-    void disableTorqueOne(bool disable, uint8_t id); //Disable torque on one motor
+    void enableTorqueAll(); //Enable torque on all motors
+    void disableTorqueAll(); //Disable torque on all motors
+    void enableTorqueOne(uint8_t id); //Enable torque on one motor
+    void disableTorqueOne(uint8_t id); //Disable torque on one motor
     void setShadowID(uint8_t id, uint8_t sha_id); //Set a shadow id for one motor
     void setExtremePositions(uint8_t id, uint16_t expos[]); //Set the extremum positions for a motor
 
-    void close_grip(bool close=true); //Close the gripper
-    void open_grip(bool open=true); //Open the gripper
+    void grip(bool grip=true); //Operate gripper the gripper
     void move_joint(uint8_t id, uint16_t theta, char type='R'); //Move one joint of the robot
     void move_joints(uint16_t theta1, uint16_t theta2, uint16_t theta3, bool grip_open=0, char type='R'); //Move all joints of the robot
     uint32_t checkPos(uint8_t id); //Return the position of a motor
@@ -55,6 +55,7 @@ private:
     void _verifyChecksum(uint16_t dataLength); // Verify the size of the incomming data
 
     HardwareSerial *_pSerial;
+    HardwareSerial *_debug_pSerial;
 };
 
 
