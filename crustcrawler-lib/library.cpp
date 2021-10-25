@@ -7,6 +7,9 @@
 
 #ifndef DXL_SERIAL
 #define DXL_SERIAL Serial
+#endif
+#ifndef DEBUG_SERIAL
+#define DEBUG_SERIAL Serial3
 
 const uint8_t dxl_dir_pin = 2;
 
@@ -18,7 +21,24 @@ void CrustCrawler::init_arm(HardwareSerial &dxl_ser, HardwareSerial &debug_ser) 
 }
 
 void CrustCrawler::shutdown_arm() {
-
+    _pSerial->torqueOn(2);
+    _pserial->torqueOn(1);
+    _pSerial->torqueOn(3);
+    _pSerial->setGoalPosition(2, 2048, UNIT_RAW);
+    while (!(_pSerial->getPresentPosition(2) < 2053 && _pSerial->getPresentPosition(2) > 2038)) {
+        _debug_pSerial->print("Motor 2 position: ");
+        _debug_pSerial->println(_pSerial->getPresentPosition(2));
+    }
+    _pSerial->setGoalPosition(3, 1024, UNIT_RAW);
+    while (!(_pSerial->getPresentPosition(3) < 1029 && _pSerial->getPresentPosition(3) > 1019)) {
+        _debug_pSerial->print("Motor 3 position   ");
+        _debug_pSerial->println(_pSerial->getPresentPosition(3));
+    }
+    _pSerial->setGoalPosition(1, 1024, UNIT_RAW);
+    while (!(_pSerial->getPresentPosition(1) < 1029 && _pSerial->getPresentPosition(1) > 1019)) {
+        _debug_pSerial->print("Motor 1 position   ");
+        _debug_pSerial->println(_pSerial->getPresentPosition(1));
+    }
 }
 
 void CrustCrawler::enableTorqueOne(uint8_t id) {
@@ -47,11 +67,10 @@ void CrustCrawler::setExtremePositions(uint8_t id, uint16_t *expos) {
    }
 }
 void CrustCrawler::grip(bool grip) {
-    if(grip == true) {
-        CrustCrawler::move_joint(_SHA_ID_GRIP, _ID_GRIP_EXPOS[1]);
-    }
-    else {
+    if (!grip) {
         CrustCrawler::move_joint(_SHA_ID_GRIP, _ID_GRIP_EXPOS[2]);
+    } else {
+        CrustCrawler::move_joint(_SHA_ID_GRIP, _ID_GRIP_EXPOS[1]);
     }
 }
 

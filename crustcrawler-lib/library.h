@@ -8,7 +8,8 @@
 #define CRUSTCRAWLER_H
 
 #define BUF_SIZE 40 //Buffer size
-#define BROADCAST_ID 0xFE
+#define BROADCAST_ID 0xFE //Broadcast ID for all motors
+#define _OFFSET_MARGIN 10 //Allowed deviance
 
 class CrustCrawler {
 private:
@@ -19,13 +20,14 @@ private:
     const uint16_t _ID_TWO_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor two
     const uint16_t _ID_THREE_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor three
     const uint16_t _ID_GRIP_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor four (gripper 1)
-
+    HardwareSerial *_pSerial; //Pointer to Dynamixel serial
+    HardwareSerial *_debug_pSerial; //Pointer to debug serial
 
 public:
     CrustCrawler(); //Standard constructor
 
     void init_arm(HardwareSerial &dxl_ser, HardwareSerial &debug_ser); //Initialize the object with communication serial
-    void shutdown_arm();
+    void shutdown_arm(); //Initialize shutdown procedure
     void enableTorqueAll(); //Enable torque on all motors
     void disableTorqueAll(); //Disable torque on all motors
     void enableTorqueOne(uint8_t id); //Enable torque on one motor
@@ -53,12 +55,6 @@ private:
     void _clearBuffer(); //Clear the RX buffer
     void _statusPacket(uint16_t dataLength); //Store the information from the buffer into a storage array
     void _verifyChecksum(uint16_t dataLength); // Verify the size of the incomming data
-
-    HardwareSerial *_pSerial;
-    HardwareSerial *_debug_pSerial;
 };
-
-
-
 
 #endif //CRUSTCRAWLER_H
