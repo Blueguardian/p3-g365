@@ -1,16 +1,8 @@
 #include "library.h"
-#include <cmath>
-#include "arduino.h"
+#include <math.h>
+#include "Arduino.h"
 #include "Dynamixel2Arduino.h"
 #include "DynamixelShield.h"
-#include <iostream>
-
-#ifndef DXL_SERIAL
-#define DXL_SERIAL Serial
-#endif
-#ifndef DEBUG_SERIAL
-#define DEBUG_SERIAL Serial3
-#endif
 
 #define UNIT_RAW 0
 #define UNIT_DEGREE 3
@@ -19,7 +11,7 @@ const uint8_t dxl_dir_pin = 2;
 
 CrustCrawler::CrustCrawler() = default;
 
-void CrustCrawler::init_arm(HardwareSerial &dxl_ser, HardwareSerial &debug_ser) {
+void CrustCrawler::init_arm(DynamixelShield &dxl_ser, HardwareSerial &debug_ser) {
     _pSerial = &dxl_ser;
     _debug_pSerial = &debug_ser;
     _pSerial->torqueOn(2);
@@ -73,16 +65,16 @@ void CrustCrawler::shutdown_arm() {
 }
 
 void CrustCrawler::enableTorqueOne(uint8_t id) {
-    _pSerial->TorqueOn(id);
+    _pSerial->torqueOn(id);
 }
 void CrustCrawler::enableTorqueAll() {
-    _pSerial->TorqueOn(BROADCAST_ID);
+    _pSerial->torqueOn(BROADCAST_ID);
 }
 void CrustCrawler::disableTorqueOne(uint8_t id) {
-    _pSerial->TorqueOff(id);
+    _pSerial->torqueOff(id);
 }
 void CrustCrawler::disableTorqueAll() {
-    _pSerial->TorqueOff(BROADCAST_ID);
+    _pSerial->torqueOff(BROADCAST_ID);
 }
 void CrustCrawler::setShadowID(uint8_t id, uint8_t sha_id) {
     _pSerial->writeControlTableItem(0x0C, id, sha_id);
@@ -112,8 +104,8 @@ void CrustCrawler::grip(bool grip) {
             _debug_pSerial->println(_pSerial->getPresentPosition(5));
 
         }
-        _pSerial.torqueOff(4);
-        _pSerial.torqueOff(5);
+        _pSerial->torqueOff(4);
+        _pSerial->torqueOff(5);
     } else if(!grip){
       //  CrustCrawler::move_joint(_SHA_ID_GRIP, _ID_GRIP_EXPOS[1]);
         _pSerial->torqueOn(4);
@@ -162,7 +154,7 @@ void CrustCrawler::move_joints(uint16_t theta1, uint16_t theta2, uint16_t theta3
         CrustCrawler::grip(grip_open);
     }
     else {
-        _debug_pSerial->println("ERROR: Input unknown type")
+        _debug_pSerial->println("ERROR: Input unknown type");
     }
 }
 uint32_t CrustCrawler::checkPos(uint8_t id) {
@@ -190,7 +182,7 @@ void CrustCrawler::setPGain(uint8_t id, uint16_t val) {
 }
 
 void CrustCrawler::setPGainAll(uint16_t val) {
-    for(int i = 0; i < _EXPT_NUM_SERVOS, i++) {
+    for(int i = 0; i < _EXPT_NUM_SERVOS; i++) {
         _pSerial->writeControlTableItem(0x50, i, val);
     }
 }

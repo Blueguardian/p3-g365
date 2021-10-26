@@ -1,8 +1,7 @@
-#include <cmath>
-#include <arduino.h>
+#include <math.h>
+#include <Arduino.h>
 #include <Dynamixel2Arduino.h>
 #include <DynamixelShield.h>
-#include <cstdint>
 
 #ifndef CRUSTCRAWLER_H
 #define CRUSTCRAWLER_H
@@ -20,13 +19,13 @@ private:
     const uint16_t _ID_TWO_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor two
     const uint16_t _ID_THREE_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor three
     const uint16_t _ID_GRIP_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor four (gripper 1)
-    HardwareSerial *_pSerial; //Pointer to Dynamixel serial
+    DynamixelShield *_pSerial; //Pointer to Dynamixel serial
     HardwareSerial *_debug_pSerial; //Pointer to debug serial
 
 public:
     CrustCrawler(); //Standard constructor
 
-    void init_arm(HardwareSerial &dxl_ser, HardwareSerial &debug_ser); //Initialize the object with communication serial
+    void init_arm(DynamixelShield &dxl_ser, HardwareSerial &debug_ser); //Initialize the object with communication serial
     void shutdown_arm(); //Initialize shutdown procedure
     void enableTorqueAll(); //Enable torque on all motors
     void disableTorqueAll(); //Disable torque on all motors
