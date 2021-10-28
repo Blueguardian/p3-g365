@@ -35,9 +35,7 @@ void CrustCrawler::init_arm(DynamixelShield &dxl_ser, HardwareSerial &debug_ser)
 }
 
 void CrustCrawler::shutdown_arm() {
-    _pSerial->torqueOn(2);
-    _pSerial->torqueOn(1);
-    _pSerial->torqueOn(3);
+    _debug_pSerial->println("Initializing shutdown");
     _pSerial->setGoalPosition(2, 2048, UNIT_RAW);
     while(!(_pSerial->getPresentPosition(2) < 2053 && _pSerial->getPresentPosition(2) > 2038))
     {
