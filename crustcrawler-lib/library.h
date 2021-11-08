@@ -26,7 +26,7 @@ private:
 public:
     CrustCrawler(); //Standard constructor
 
-    void init_arm(HardwareSerial &dxl_ser, HardwareSerial &debug_ser); //Initialize the object with communication serial
+    void init_arm(DynamixelShield &dxl_ser, HardwareSerial &debug_ser); //Initialize the object with communication serial
     void shutdown_arm(); //Initialize shutdown procedure
     void enableTorqueAll(); //Enable torque on all motors
     void disableTorqueAll(); //Disable torque on all motors

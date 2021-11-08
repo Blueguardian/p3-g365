@@ -1,13 +1,10 @@
 #include "library.h"
-#include <cmath>
-#include "arduino.h"
+#include <math.h>
+#include "Arduino.h"
 #include "Dynamixel2Arduino.h"
 #include "DynamixelShield.h"
-#include <iostream>
 
-#ifndef DXL_SERIAL
-#define DXL_SERIAL Serial
-#endif
+
 #ifndef DEBUG_SERIAL
 #define DEBUG_SERIAL Serial3
 
@@ -15,7 +12,7 @@ const uint8_t dxl_dir_pin = 2;
 
 CrustCrawler::CrustCrawler() = default;
 
-void CrustCrawler::init_arm(HardwareSerial &dxl_ser, HardwareSerial &debug_ser) {
+void CrustCrawler::init_arm(DynamixelShield &dxl_ser, HardwareSerial &debug_ser) {
     _pSerial = &dxl_ser;
     _debug_pSerial = &debug_ser;
 }
