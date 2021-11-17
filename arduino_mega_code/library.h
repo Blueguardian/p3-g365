@@ -13,12 +13,12 @@
 class CrustCrawler {
 private:
     const uint8_t _EXPT_NUM_SERVOS = 5; //Expected number of servos available
-    const uint8_t _SHA_ID_GRIP = 0x00; //To be determined //Gripper shadow ID for motor four and five
+    const uint8_t _SHA_ID_GRIP = 0x10; //To be determined //Gripper shadow ID for motor four and five
     const uint8_t _ID_ARR[4] = { 1, 2, 3, _SHA_ID_GRIP}; //Array of motor IDs
-    const uint16_t _ID_ONE_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor one
-    const uint16_t _ID_TWO_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor two
-    const uint16_t _ID_THREE_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor three
-    const uint16_t _ID_GRIP_EXPOS[4] = {0, 0, 0, 4096}; //To be determined //Extremum positions of motor four (gripper 1)
+    const uint16_t _ID_ONE_EXPOS[4] = {0, 4096, 2047, 4095};  //Extremum positions of motor one
+    const uint16_t _ID_TWO_EXPOS[4] = {0, 4096, 850, 2047}; //Extremum positions of motor two
+    const uint16_t _ID_THREE_EXPOS[4] = {0, 4096, 850, 2047};  //Extremum positions of motor three
+    const uint16_t _ID_GRIP_EXPOS[4] = {0, 4096, 1100, 2000};  //Extremum positions of motor four (gripper 1)
     DynamixelShield *_pSerial; //Pointer to Dynamixel serial
     HardwareSerial *_debug_pSerial; //Pointer to debug serial
 

@@ -1,7 +1,6 @@
 #include <DynamixelShield.h>
 #include <Dynamixel2Arduino.h>
 #include "library.h"
-#include "MyoController.h"
 
 #if defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_MEGA2560)
 #define DEBUG_SERIAL Serial3
@@ -15,17 +14,17 @@
 const uint8_t DXL_PROTOCOL_VERSION = 2.0;
 
 DynamixelShield dxl;
-MyoController myo = MyoController();
 
 using namespace ControlTableItem;
 
-int input = 0;
+char input = 0;
 int init_arm = 0;
 int motor_def = 1;
 bool gripper = false;
 CrustCrawler crst;
 
 void setup() {
+  input = 0;
   DEBUG_SERIAL.begin(115200); // For mega debugging
 
   //Set baudrate to 57600 bps, Matching Dynamixel baudrate
@@ -49,9 +48,6 @@ void setup() {
     }
   }
 
-  while (!myo.initMyo(DEBUG_SERIAL)) {
-    DEBUG_SERIAL.println("Nope");
-  }
   if (DEBUG_SERIAL.available()) {
     while (DEBUG_SERIAL.available()) {
       DEBUG_SERIAL.read();
@@ -60,42 +56,55 @@ void setup() {
 }
 
 void loop() {
-  delay(100);
+  delay(10);
   DEBUG_SERIAL.println("Looping...");
-  input = 0;
-  myo.updatePose();
-  if (myo.getCurrentPose() == 1 && init_arm == 0)
+  if(DEBUG_SERIAL.available() > 0){
+    input = DEBUG_SERIAL.read();
+  }
+  if (input == '1' && init_arm == 0)
   {
     DEBUG_SERIAL.println("Initializing");
     crst.init_arm(dxl, DEBUG_SERIAL);
-    input = 0;
     init_arm = 1;
+    input = 0;
   }
-  else if (myo.getCurrentPose() == 1 && init_arm == 1) {
+  else if (input == '1' && init_arm == 1) {
     if (motor_def < 3) {
       motor_def++;
     }
     else {
       motor_def = 1;
     }
+    input = 0;
     DEBUG_SERIAL.println("Shifting motor");
   }
-  else if (myo.getCurrentPose() == 2 && init_arm == 1) {
+  else if (input == '3' && init_arm == 1) {
     DEBUG_SERIAL.println("Negative");
-    crst.move_joint(motor_def, dxl.getPresentPosition(motor_def) - 10, 'R');
+    while(input == '3') {
+      crst.move_joint(motor_def, dxl.getPresentPosition(motor_def) - 320, 'R');
+      if(DEBUG_SERIAL.available() > 0) {
+        input = DEBUG_SERIAL.read();
+      }
+    }
+
   }
-  else if (myo.getCurrentPose() == 3 && init_arm == 1) {
+  else if (input == '4' && init_arm == 1) {
     DEBUG_SERIAL.println("Positive");
-    crst.move_joint(motor_def, dxl.getPresentPosition(motor_def) + 10, 'R');
+    while(input == '4') {
+      crst.move_joint(motor_def, dxl.getPresentPosition(motor_def) + 30, 'R');
+      if(DEBUG_SERIAL.available() > 0) {
+        input = DEBUG_SERIAL.read();
+      }
+    }
   }
-  else if (myo.getCurrentPose() == 4 && init_arm == 1)
+  else if (input == '2' && init_arm == 1)
   {
     DEBUG_SERIAL.println("Shutting down arm...");
     crst.shutdown_arm();
     input = 0;
     init_arm = 0;
   }
-  else if (myo.getCurrentPose() == 5 && init_arm == 1) {
+  else if (input == '5' && init_arm == 1) {
     if (gripper == false) {
       crst.grip(true);
       gripper = true;
@@ -106,5 +115,6 @@ void loop() {
       crst.grip(false);
       gripper = false;
     }
+    input = 0;
   }
 }
