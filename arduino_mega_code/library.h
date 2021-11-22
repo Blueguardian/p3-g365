@@ -15,7 +15,7 @@ private:
     const uint8_t _EXPT_NUM_SERVOS = 5; //Expected number of servos available
     const uint8_t _SHA_ID_GRIP = 0x10; //To be determined //Gripper shadow ID for motor four and five
     const uint8_t _ID_ARR[4] = { 1, 2, 3, _SHA_ID_GRIP}; //Array of motor IDs
-    const uint16_t _ID_ONE_EXPOS[4] = {2048, 4096};  //Extremum positions of motor one
+    const uint16_t _ID_ONE_EXPOS[4] = {512, 3584};  //Extremum positions of motor one
     const uint16_t _ID_TWO_EXPOS[4] = {850, 2047}; //Extremum positions of motor two
     const uint16_t _ID_THREE_EXPOS[4] = {850, 2047};  //Extremum positions of motor three
     const uint16_t _ID_GRIP_EXPOS[4] = {1100, 2000};  //Extremum positions of motor four (gripper 1)
@@ -34,9 +34,9 @@ public:
     void setShadowID(uint8_t id, uint8_t sha_id); //Set a shadow id for one motor
     void setExtremePositions(uint8_t id, uint16_t expos[]); //Set the extremum positions for a motor
 
-    void grip(bool grip=true); //Operate gripper the gripper
-    void move_joint(uint8_t id, uint16_t theta, char type='R'); //Move one joint of the robot
-    void move_joints(uint16_t theta1, uint16_t theta2, uint16_t theta3, bool grip_open=0, char type='R'); //Move all joints of the robot
+    void grip(bool gripper=true); //Operate gripper the gripper
+    void move_joint(uint8_t id, uint16_t theta, char type='R', char controlType='P'); //Move one joint of the robot
+    void move_joints(uint16_t theta1, uint16_t theta2, uint16_t theta3, bool grip_open=0, char type='R', char controlType='P'); //Move all joints of the robot
     uint32_t checkPos(uint8_t id); //Return the position of a motor
 
     void setProfileVel(uint8_t id, uint16_t val); //Set the profile velocity for a motor
@@ -53,7 +53,8 @@ public:
 private:
     void _clearBuffer(); //Clear the RX buffer
     void _statusPacket(uint16_t dataLength); //Store the information from the buffer into a storage array
-    void _verifyChecksum(uint16_t dataLength); // Verify the size of the incomming data
+    bool _verifyChecksum(uint16_t dataLength); // Verify the size of the incoming data
+    u_int16_t _update_crc(uint8_t *arr, uint16_t length)
 };
 
 #endif //CRUSTCRAWLER_H
