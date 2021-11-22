@@ -8,16 +8,15 @@
 #define UNIT_DEGREE 3
 
 const uint8_t dxl_dir_pin = 2;
+uint8_t grip_direc= 1;
 
 CrustCrawler::CrustCrawler() = default;
 
 void CrustCrawler::init_arm(DynamixelShield &dxl_ser, HardwareSerial &debug_ser) {
     _pSerial = &dxl_ser;
     _debug_pSerial = &debug_ser;
-    _pSerial->torqueOn(2);
-    _pSerial->torqueOn(1);
-    _pSerial->torqueOn(3);
-    this->grip(true);
+    CrustCrawler::enableTorqueAll();
+    CrustCrawler::grip(false);
     _pSerial->setGoalPosition(2, 2048, UNIT_RAW);
     while (!(_pSerial->getPresentPosition(2) < 2053 && _pSerial->getPresentPosition(2) > 2038)) {
         _debug_pSerial->print("Motor 2 position: ");
@@ -28,21 +27,16 @@ void CrustCrawler::init_arm(DynamixelShield &dxl_ser, HardwareSerial &debug_ser)
         _debug_pSerial->print("Motor 3 position   ");
         _debug_pSerial->println(_pSerial->getPresentPosition(3));
     }
-    _pSerial->setGoalPosition(1, 1024, UNIT_RAW);
-    while (!(_pSerial->getPresentPosition(1) < 1029 && _pSerial->getPresentPosition(1) > 1019)) {
+    _pSerial->setGoalPosition(1, 2048, UNIT_RAW);
+    while (!(_pSerial->getPresentPosition(1) < 2058 && _pSerial->getPresentPosition(1) > 2038)) {
         _debug_pSerial->print("Motor 1 position   ");
         _debug_pSerial->println(_pSerial->getPresentPosition(1));
     }
-    this->setExtremePositions(_ID_ARR[1], _ID_ONE_EXPOS);
-    this->setExtremePositions(_ID_ARR[2], _ID_TWO_EXPOS);
-    this->setExtremePositions(_ID_ARR[3], _ID_THREE_EXPOS);
-    this->setExtremePositions(_ID_ARR[4], _ID_GRIP_EXPOS);
-
 }
 
 void CrustCrawler::shutdown_arm() {
     _debug_pSerial->println("Initializing shutdown");
-    this->grip(true);
+    CrustCrawler::grip(false);
     _pSerial->setGoalPosition(2, 2048, UNIT_RAW);
     while (!(_pSerial->getPresentPosition(2) < 2053 && _pSerial->getPresentPosition(2) > 2038)) {
         _debug_pSerial->print("Motor 2 position: ");
@@ -63,9 +57,7 @@ void CrustCrawler::shutdown_arm() {
         _debug_pSerial->print("Motor 2 position: ");
         _debug_pSerial->println(_pSerial->getPresentPosition(1));
     }
-    _pSerial->torqueOff(2);
-    _pSerial->torqueOff(1);
-    _pSerial->torqueOff(3);
+    CrustCrawler::disableTorqueAll();
 }
 
 void CrustCrawler::enableTorqueOne(uint8_t id) {
@@ -89,41 +81,28 @@ void CrustCrawler::setShadowID(uint8_t id, uint8_t sha_id) {
 }
 
 void CrustCrawler::setExtremePositions(uint8_t id, uint16_t *expos) {
-    uint32_t control_val = _pSerial->readControlTableItem(0x30, id); //Check maximum value
-    if (control_val != expos[4]) {
         _pSerial->writeControlTableItem(0x30, id, expos[4]);
-    }
-    control_val = _pSerial->readControlTableItem(0x34, id);
-    if (control_val != expos[3]) {
         _pSerial->writeControlTableItem(0x34, id, expos[3]);
-    }
 }
 
 void CrustCrawler::grip(bool grip) {
     if (grip) {
-
-        _pSerial->torqueOn(4);
-        _pSerial->torqueOn(5);
-        this->move_joint(_SHA_ID_GRIP, _ID_GRIP_EXPOS[2]);
+        CrustCrawler::move_joint(4, _ID_GRIP_EXPOS[2]);
+        CrustCrawler::move_joint(5, _ID_GRIP_EXPOS[2]);
         _debug_pSerial->println("Gripper not open");
         _debug_pSerial->print("Motor 4 present position: ");
         _debug_pSerial->println(_pSerial->getPresentPosition(4));
         _debug_pSerial->print("Motor 5 present position: ");
         _debug_pSerial->println(_pSerial->getPresentPosition(5));
-        _pSerial->torqueOff(4);
-        _pSerial->torqueOff(5);
     } else if (!grip) {
         //  CrustCrawler::
-        _pSerial->torqueOn(4);
-        _pSerial->torqueOn(5);
-        this->move_joint(_SHA_ID_GRIP, _ID_GRIP_EXPOS[1]);
+        CrustCrawler::move_joint(4, _ID_GRIP_EXPOS[1]);
+        CrustCrawler::move_joint(5, _ID_GRIP_EXPOS[1]);
         _debug_pSerial->println("Gripper not closed");
         _debug_pSerial->print("Motor 4 present position: ");
         _debug_pSerial->println(_pSerial->getPresentPosition(4));
         _debug_pSerial->print("Motor 5 present position: ");
         _debug_pSerial->println(_pSerial->getPresentPosition(5));
-        _pSerial->torqueOff(4);
-        _pSerial->torqueOff(5);
     } else {
         _debug_pSerial->println("ERROR: Wrong parameter");
     }
@@ -157,7 +136,8 @@ void CrustCrawler::move_joints(uint16_t theta1, uint16_t theta2, uint16_t theta3
 }
 
 uint32_t CrustCrawler::checkPos(uint8_t id) {
-    _pSerial->getPresentPosition(id);
+   uint32_t pos = _pSerial->getPresentPosition(id);
+   return pos;
 }
 
 void CrustCrawler::setProfileVel(uint8_t id, uint16_t val) {
