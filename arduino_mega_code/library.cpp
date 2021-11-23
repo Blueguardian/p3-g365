@@ -95,14 +95,14 @@ void CrustCrawler::setExtremePositions(uint8_t id, uint16_t *expos) {
 }
 
 void CrustCrawler::grip(bool gripper) {
-    if (gripper == true) {
+    if (gripper) {
         CrustCrawler::move_joint(_SHA_ID_GRIP, _ID_GRIP_EXPOS[1]);
         _debug_pSerial->println("Gripper not open");
         _debug_pSerial->print("Motor 4 present position: ");
         _debug_pSerial->println(CrustCrawler::checkPos(4));
         _debug_pSerial->print("Motor 5 present position: ");
         _debug_pSerial->println(CrustCrawler::checkPos(5));
-    } else if (gripper == false) {
+    } else if (!gripper) {
         //  CrustCrawler::
         CrustCrawler::move_joint(_SHA_ID_GRIP, _ID_GRIP_EXPOS[0]);
         _debug_pSerial->println("Gripper not closed");
