@@ -85,20 +85,26 @@ void loop() {
     
     else if (input == '1' && init_arm == 1) {
       if (gripper == false) {
+        unsigned long init_time_t = millis();
+        uint16_t des_pos1 = crst.checkPos(4) + 20;
+        uint16_t des_pos2 = crst.checkPos(5) + 20;
         if (crst.checkPos(4) < 2000 && crst.checkPos(5) < 2000 && input == '1') {
-          crst.move_joint(4, crst.checkPos(4) + 20, 'R');
-          crst.move_joint(5, crst.checkPos(5) + 20, 'R');
+          crst.move_joint(4, des_pos1, 'R');
+          crst.move_joint(5, des_pos2, 'R');
         }
-        else if((crst.checkPos(4) > 1980 && crst.checkPos(4) < 2010) && (crst.checkPos(5) > 1980 && crst.checkPos(5) < 2010)) {
+        else if(millis()-init_time_t >= 10 && (crst.checkPos(4) < des_pos1-1 && crst.checkPos(5) < des_pos2-1)) {
           gripper = true;
         }
       }
       else if (gripper == true) {
+        unsigned long init_time_t = millis();
+        uint16_t des_pos1 = crst.checkPos(4) - 20;
+        uint16_t des_pos2 = crst.checkPos(5) - 20;
         if (crst.checkPos(4) > 1100 && crst.checkPos(5) > 1100 && input == '1') {
           crst.move_joint(4, crst.checkPos(4) - 20, 'R');
           crst.move_joint(5, crst.checkPos(5) - 20, 'R');
         }
-        else if((crst.checkPos(4) > 1090 && crst.checkPos(4) < 1110) && (crst.checkPos(5) > 1090 && crst.checkPos(5) < 1110)) {
+        else if((millis()-init_time_t >= 10 && (crst.checkPos(4) > des_pos1+1 && crst.checkPos(5) > des_pos2+1))) {
         gripper = false;
         }
       }
