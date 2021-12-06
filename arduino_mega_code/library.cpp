@@ -12,6 +12,8 @@
 
 const uint8_t dxl_dir_pin = 2;
 
+using namespace ControlTableItem;
+
 CrustCrawler::CrustCrawler() = default;
 
 void CrustCrawler::init_arm(DynamixelShield &dxl_ser, HardwareSerial &debug_ser) {
@@ -86,12 +88,12 @@ void CrustCrawler::disableTorqueAll() {
 }
 
 void CrustCrawler::setShadowID(uint8_t id, uint8_t sha_id) {
-    _pSerial->writeControlTableItem(_pSerial->getModelNumberFromTable(id), 0x0C, id, sha_id, 10);
+    _pSerial->writeControlTableItem(SECONDARY_ID, id, sha_id);
 }
 
 void CrustCrawler::setExtremePositions(uint8_t id, uint16_t *expos) {
-    _pSerial->writeControlTableItem(_pSerial->getModelNumberFromTable(id), 0x30, id, expos[1], 10);
-    _pSerial->writeControlTableItem(_pSerial->getModelNumberFromTable(id), 0x34, id, expos[0], 10);
+    _pSerial->writeControlTableItem(MAX_POSITION_LIMIT, id, expos[1]);
+    _pSerial->writeControlTableItem(MIN_POSITION_LIMIT, id, expos[0]);
 }
 
 void CrustCrawler::grip(bool gripper) {
@@ -118,14 +120,13 @@ void CrustCrawler::grip(bool gripper) {
 void CrustCrawler::move_joint(uint8_t id, float theta, char type, char controltype) {
     if (controltype == 'P') {
         if (type == 'R') {
-            _pSerial->setGoalPosition(id, static_cast<int>(theta), UNIT_RAW);
+            _pSerial->setGoalPosition(id, theta, UNIT_RAW);
         } else if (type == 'D') {
-            _pSerial->setGoalPosition(id, static_cast<int>(theta), UNIT_DEGREE);
+            _pSerial->setGoalPosition(id, theta, UNIT_DEGREE);
         } else {
             _debug_pSerial->println("ERROR: Input unknown type");
         }
-    }
-    else if (controltype == 'W') {
+    } else if (controltype == 'W') {
         if (type == 'R') {
             _pSerial->setGoalPWM(id, theta, UNIT_RAW);
         } else if (type == 'P') {
@@ -133,8 +134,7 @@ void CrustCrawler::move_joint(uint8_t id, float theta, char type, char controlty
         } else {
             _debug_pSerial->println("ERROR: Input unknown type");
         }
-    }
-    else if (controltype == 'V') {
+    } else if (controltype == 'V') {
         if (type == 'R') {
             _pSerial->setGoalVelocity(id, theta, UNIT_RAW);
         } else if (type == 'P') {
@@ -144,8 +144,7 @@ void CrustCrawler::move_joint(uint8_t id, float theta, char type, char controlty
         } else {
             _debug_pSerial->println("ERROR: Input unknown type");
         }
-    }
-    else if(controltype == 'C') {
+    } else if (controltype == 'C') {
         if (type == 'R') {
             _pSerial->setGoalCurrent(id, theta, UNIT_RAW);
         } else if (type == 'P') {
@@ -155,12 +154,12 @@ void CrustCrawler::move_joint(uint8_t id, float theta, char type, char controlty
         } else {
             _debug_pSerial->println("ERROR: Input unknown type");
         }
-    }
-    else {
+    } else {
         _debug_pSerial->println("ERROR: Unknown control type input");
+    }
 }
 
-void CrustCrawler::move_joints(uint16_t theta1, uint16_t theta2, uint16_t theta3, char type, char controlType) {
+void CrustCrawler::move_joints(float theta1, float theta2, float theta3, char type, char controlType) {
     uint16_t stor_arr[3] = {theta1, theta2, theta3};
 
     for (int i = 0; i < _EXPT_NUM_SERVOS - 2; i++) {
@@ -174,48 +173,48 @@ uint32_t CrustCrawler::checkPos(uint8_t id) {
 }
 
 void CrustCrawler::setProfileVel(uint8_t id, uint16_t val) {
-    _pSerial->writeControlTableItem(_pSerial->getModelNumberFromTable(id), 0x70, id, val, 10);
+    _pSerial->writeControlTableItem(PROFILE_VELOCITY, id, val);
 }
 
 void CrustCrawler::setProfileAcc(uint8_t id, uint16_t val) {
-    _pSerial->writeControlTableItem(_pSerial->getModelNumberFromTable(id), 0x6C, id, val, 10);
+    _pSerial->writeControlTableItem(PROFILE_ACCELERATION, id, val);
 }
 
 void CrustCrawler::setMaxvel(uint8_t id, uint16_t val) {
-    _pSerial->writeControlTableItem(_pSerial->getModelNumberFromTable(id), 0x2C, id, val, 10);
+    _pSerial->writeControlTableItem(VELOCITY_LIMIT, id, val);
 }
 
 void CrustCrawler::setMaxAcc(uint8_t id, uint16_t val) {
-    _pSerial->writeControlTableItem(_pSerial->getModelNumberFromTable(id), 0x28, id, val, 10);
+    _pSerial->writeControlTableItem(ACCELERATION_LIMIT, id, val);
 }
 
 void CrustCrawler::setPGain(uint8_t id, uint16_t val) {
-    _pSerial->writeControlTableItem(_pSerial->getModelNumberFromTable(id), 0x50, id, val, 10);
+    _pSerial->writeControlTableItem(POSITION_P_GAIN, id, val);
 }
 
 void CrustCrawler::setPGainAll(uint16_t val) {
     for (int i = 0; i < _EXPT_NUM_SERVOS; i++) {
-        _pSerial->writeControlTableItem(_pSerial->getModelNumberFromTable(i), 0x50, i, val, 10);
+        _pSerial->writeControlTableItem(POSITION_P_GAIN, i, val);
     }
 }
 
 void CrustCrawler::setIGain(uint8_t id, uint16_t val) {
-    _pSerial->writeControlTableItem(_pSerial->getModelNumberFromTable(id), 0x52, id, val, 10);
+    _pSerial->writeControlTableItem(POSITION_I_GAIN, id, val);
 }
 
 void CrustCrawler::setIGainAll(uint16_t val) {
     for (int i = 0; i < _EXPT_NUM_SERVOS; i++) {
-        _pSerial->writeControlTableItem(_pSerial->getModelNumberFromTable(i), 0x52, i, val, 10);
+        _pSerial->writeControlTableItem(POSITION_I_GAIN, i, val);
     }
 }
 
 void CrustCrawler::setDGain(uint8_t id, uint16_t val) {
-    _pSerial->writeControlTableItem(_pSerial->getModelNumberFromTable(id), 0x54, id, val, 10);
+    _pSerial->writeControlTableItem(POSITION_D_GAIN, id, val);
 }
 
 void CrustCrawler::setDGainAll(uint16_t val) {
     for (int i = 0; i < _EXPT_NUM_SERVOS; i++) {
-        _pSerial->writeControlTableItem(_pSerial->getModelNumberFromTable(i), 0x54, i, val, 10);
+        _pSerial->writeControlTableItem(POSITION_D_GAIN, i, val);
     }
 }
 
@@ -229,17 +228,15 @@ void CrustCrawler::_statusPacket(uint16_t dataLength) {
     //Unknown right now, verify the need for this function
 }
 
-bool CrustCrawler::_verifyChecksum(uint16_t dataLength) {
-    uint16_t checkSum, receivedCheckSum = 0;
+/*bool CrustCrawler::_verifyChecksum(uint16_t dataLength) {
+   uint16_t checkSum, receivedCheckSum = 0;
 
     checkSum = CrustCrawler::_update_crc(_arrRx, dataLength + 11);
     receivedCheckSum = _arrRx[dataLength + 10];
     receivedCheckSum = (receivedCheckSum << 8) | _arrRx[dataLength + 9];
 
     return (checkSum == receivedCheckSum);
-}
-
-}
+}*/
 
 uint16_t CrustCrawler::_update_crc(uint8_t *arr, uint16_t length) {
     uint16_t i, j = 0;
