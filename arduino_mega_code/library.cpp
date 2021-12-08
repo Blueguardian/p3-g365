@@ -1,22 +1,37 @@
+/*
+ * CrustCrawler library for project on ROB3 group 365 2021
+ * Utilizes methods from the Dynamixel2arduino library for methods
+ * */
+
+
+//Include necessary libraries
 #include "library.h"
 #include <math.h>
 #include "Arduino.h"
 #include "Dynamixel2Arduino.h"
 #include "DynamixelShield.h"
 
+
+//Define values for setGoalPosition units
 #define UNIT_RAW 0
 #define UNIT_PERCENT 1
 #define UNIT_RPM 2
 #define UNIT_DEGREE 3
 #define UNIT_MILLI_AMPERE 5
 
-const uint8_t dxl_dir_pin = 2;
+using namespace ControlTableItem; //For using controltable item names
 
-using namespace ControlTableItem;
-
-CrustCrawler::CrustCrawler() = default;
+CrustCrawler::CrustCrawler() = default; //Constructor for CrustCrawler object
 
 void CrustCrawler::init_arm(DynamixelShield &dxl_ser, HardwareSerial &debug_ser) {
+    /**
+     * Initialization method for the CrustCrawler arm
+     * Sets the shadow ID for the gripper servos and position limits for all joints
+     * Enables torque on on servos, closes the gripper and move the CrustCrawler into
+     * the starting postion
+     * Par: &dxl_ser: Dynamixel serial
+     * Par: &debug_ser: Debugging Serial (Used for communication)
+     * **/
     _pSerial = &dxl_ser;
     _debug_pSerial = &debug_ser;
     CrustCrawler::setShadowID(4, _SHA_ID_GRIP);
@@ -37,7 +52,7 @@ void CrustCrawler::init_arm(DynamixelShield &dxl_ser, HardwareSerial &debug_ser)
         _debug_pSerial->print("Motor 3 position   ");
         _debug_pSerial->println(CrustCrawler::checkPos(3));
     }
-    CrustCrawler::move_joint(3, 2048);
+    CrustCrawler::move_joint(1, 3072);
     while (!(CrustCrawler::checkPos(1) < 2058 && CrustCrawler::checkPos(1) > 2038)) {
         _debug_pSerial->print("Motor 1 position   ");
         _debug_pSerial->println(CrustCrawler::checkPos(1));
@@ -46,6 +61,11 @@ void CrustCrawler::init_arm(DynamixelShield &dxl_ser, HardwareSerial &debug_ser)
 }
 
 void CrustCrawler::shutdown_arm() {
+    /**
+     * Shutdown method for the CrustCrawler
+     * Moves the CrustCrawler into the shutdown position defined here
+     * Disables torque on all servos
+     * **/
     _debug_pSerial->println("Initializing shutdown");
     CrustCrawler::grip(false);
     CrustCrawler::move_joint(2, 2048);
@@ -58,7 +78,7 @@ void CrustCrawler::shutdown_arm() {
         _debug_pSerial->print("Motor 3 position   ");
         _debug_pSerial->println(CrustCrawler::checkPos(3));
     }
-    CrustCrawler::move_joint(1, 512);
+    CrustCrawler::move_joint(1, 3072);
     while (!(CrustCrawler::checkPos(1) < 517 && CrustCrawler::checkPos(1) > 507)) {
         _debug_pSerial->print("Motor 1 position: ");
         _debug_pSerial->println(CrustCrawler::checkPos(1));
@@ -72,40 +92,75 @@ void CrustCrawler::shutdown_arm() {
 }
 
 void CrustCrawler::enableTorqueOne(uint8_t id) {
+    /**
+     * Method for enabling torque on a single servo
+     * Using Dynamixel2Arduino library method
+     * Par: id: ID of servo
+     * **/
+
     _pSerial->torqueOn(id);
 }
 
 void CrustCrawler::enableTorqueAll() {
+    /**
+     * Method for enabling torque on all servos
+     * Using Dynamixel2Arduino library method
+     * **/
     _pSerial->torqueOn(BROADCAST_ID);
 }
 
 void CrustCrawler::disableTorqueOne(uint8_t id) {
+    /**
+     * Method for disabling torque on a single servo
+     * Using Dynamixel2Arduino library method
+     * Par: id: ID of servo
+     * **/
     _pSerial->torqueOff(id);
 }
 
 void CrustCrawler::disableTorqueAll() {
+    /**
+     * Method for disabling torque on all servos
+     * Using Dynamixel2Arduino library method
+     * **/
     _pSerial->torqueOff(BROADCAST_ID);
 }
 
 void CrustCrawler::setShadowID(uint8_t id, uint8_t sha_id) {
+    /**
+     * Method for setting Shadow/Secondary ID for a servo
+     * Using Dynamixel2Arduino library method
+     * Par: id: ID of servo
+     * Par: sha_id: Desired shadown/secondary ID
+     * **/
     _pSerial->writeControlTableItem(SECONDARY_ID, id, sha_id);
 }
 
 void CrustCrawler::setExtremePositions(uint8_t id, uint16_t *expos) {
+    /**
+     * Method for setting the maximum and minimum position limits for a servo
+     * Using Dynamixel2Arduino library method
+     * Par: id: ID of servo
+     * Par: *expos: Array of position limits
+     * **/
     _pSerial->writeControlTableItem(MAX_POSITION_LIMIT, id, expos[1]);
     _pSerial->writeControlTableItem(MIN_POSITION_LIMIT, id, expos[0]);
 }
 
 void CrustCrawler::grip(bool gripper) {
-    if (gripper) {
+    /**
+     * Method for opening and closing the gripper in one move
+     * Using Dynamixel2Arduino library method
+     * Par: gripper: boolean value true for gripper closed and false for gripper open
+     * **/
+    if (gripper) {                                                      //If gripper closed
         CrustCrawler::move_joint(_SHA_ID_GRIP, _ID_GRIP_EXPOS[1]);
-        _debug_pSerial->println("Gripper not open");
+        _debug_pSerial->println("Gripper not open");                    //Print debugging messages
         _debug_pSerial->print("Motor 4 present position: ");
         _debug_pSerial->println(CrustCrawler::checkPos(4));
         _debug_pSerial->print("Motor 5 present position: ");
         _debug_pSerial->println(CrustCrawler::checkPos(5));
-    } else if (!gripper) {
-        //  CrustCrawler::
+    } else if (!gripper) {                                              //If gripper open
         CrustCrawler::move_joint(_SHA_ID_GRIP, _ID_GRIP_EXPOS[0]);
         _debug_pSerial->println("Gripper not closed");
         _debug_pSerial->print("Motor 4 present position: ");
@@ -118,6 +173,16 @@ void CrustCrawler::grip(bool gripper) {
 }
 
 void CrustCrawler::move_joint(uint8_t id, float theta, char type, char controltype) {
+    /**
+     * Method for moving one servo
+     * Depending on the selected type (Input type) and controltype (e.g. Position control) moves
+     * the selected joint with the given value (theta) and ID (id)
+     * Par: id: ID of servo
+     * Par: theta: value to move (e.g. controltype 'P', type 'R', the raw servo angle value)
+     * Par: type: Input type (e.g. 'R' for UNIT_RAW)
+     * Par: controlType: Control type (e.g. 'P' for position control) NOTE: Does not change controltype of servo
+     * **/
+
     if (controltype == 'P') {
         if (type == 'R') {
             _pSerial->setGoalPosition(id, theta, UNIT_RAW);
@@ -160,6 +225,14 @@ void CrustCrawler::move_joint(uint8_t id, float theta, char type, char controlty
 }
 
 void CrustCrawler::move_joints(float theta1, float theta2, float theta3, char type, char controlType) {
+    /**
+     * Method for simultaneously moving multiple servos
+     * Applies the given theta values as movement input depending on the theta value postfix, type and control
+     * type as defined in CrustCrawler::move_joint(...)
+     * Par: theta1-3: value to move servo with ID 1-3 (further definition in CrustCrawler::move_joint(...))
+     * Par: type: Input type as in CrustCrawler::move_joint(...)
+     * Par: controltype: Control type as in CrustCrawler::move_joint(...)
+     */
     uint16_t stor_arr[3] = {theta1, theta2, theta3};
 
     for (int i = 0; i < _EXPT_NUM_SERVOS - 2; i++) {
@@ -168,63 +241,135 @@ void CrustCrawler::move_joints(float theta1, float theta2, float theta3, char ty
 }
 
 uint32_t CrustCrawler::checkPos(uint8_t id) {
+    /**
+     * Method for retrieving the current position of a servo
+     * Using Dynamixel2Arduino library method
+     * Par: id: ID of servo
+     * return: pos: position of servo with id
+     * **/
     uint32_t pos = _pSerial->getPresentPosition(id);
     return pos;
 }
 
 void CrustCrawler::setProfileVel(uint8_t id, uint16_t val) {
+    /**
+     * Method for setting Profile velocity on control table of the given servo
+     * Using Dynamixel2Arduino library method
+     * Par: id: ID of servo
+     * Par: val: Desired value of Profile velocity
+     * **/
     _pSerial->writeControlTableItem(PROFILE_VELOCITY, id, val);
 }
 
 void CrustCrawler::setProfileAcc(uint8_t id, uint16_t val) {
+    /**
+    * Method for setting Profile acceleration on control table of the given servo
+    * Using Dynamixel2Arduino library method
+    * Par: id: ID of servo
+    * Par: val: Desired value of Profile acceleration
+    * **/
     _pSerial->writeControlTableItem(PROFILE_ACCELERATION, id, val);
 }
 
 void CrustCrawler::setMaxvel(uint8_t id, uint16_t val) {
+    /**
+    * Method for setting velocity limit on control table of the given servo
+    * Using Dynamixel2Arduino library method
+    * Par: id: ID of servo
+    * Par: val: Desired value of velocity limit
+    * **/
     _pSerial->writeControlTableItem(VELOCITY_LIMIT, id, val);
 }
 
 void CrustCrawler::setMaxAcc(uint8_t id, uint16_t val) {
+    /**
+    * Method for setting acceleration limit on control table of the given servo
+    * Using Dynamixel2Arduino library method
+    * Par: id: ID of servo
+    * Par: val: Desired value of acceleration limit
+    * **/
     _pSerial->writeControlTableItem(ACCELERATION_LIMIT, id, val);
 }
 
 void CrustCrawler::setPGain(uint8_t id, uint16_t val) {
+    /**
+    * Method for setting P-gain for the PID control in control table for a single servo
+    * Using Dynamixel2Arduino library method
+    * Par: id: ID of servo
+    * Par: val: Desired value of P-gain
+    **/
     _pSerial->writeControlTableItem(POSITION_P_GAIN, id, val);
 }
 
 void CrustCrawler::setPGainAll(uint16_t val) {
+    /**
+    * Method for setting P-gain for the PID control in control table for all servos
+    * Using Dynamixel2Arduino library method
+    * Par: val: Desired value of P-gain
+    **/
     for (int i = 0; i < _EXPT_NUM_SERVOS; i++) {
         _pSerial->writeControlTableItem(POSITION_P_GAIN, i, val);
     }
 }
 
 void CrustCrawler::setIGain(uint8_t id, uint16_t val) {
+    /**
+    * Method for setting I-gain for the PID control in control table for a single servo
+    * Using Dynamixel2Arduino library method
+    * Par: id: ID of servo
+    * Par: val: Desired value of I-gain
+    **/
     _pSerial->writeControlTableItem(POSITION_I_GAIN, id, val);
 }
 
 void CrustCrawler::setIGainAll(uint16_t val) {
+    /**
+    * Method for setting I-gain for the PID control in control table for all servos
+    * Using Dynamixel2Arduino library method
+    * Par: val: Desired value of I-gain
+    **/
     for (int i = 0; i < _EXPT_NUM_SERVOS; i++) {
         _pSerial->writeControlTableItem(POSITION_I_GAIN, i, val);
     }
 }
 
 void CrustCrawler::setDGain(uint8_t id, uint16_t val) {
+    /**
+    * Method for setting D-gain for the PID control in control table for a single servo
+    * Using Dynamixel2Arduino library method
+    * Par: id: ID of servo
+    * Par: val: Desired value of D-gain
+    **/
     _pSerial->writeControlTableItem(POSITION_D_GAIN, id, val);
 }
 
 void CrustCrawler::setDGainAll(uint16_t val) {
+    /**
+    * Method for setting D-gain for the PID control in control table for all servos
+    * Using Dynamixel2Arduino library method
+    * Par: val: Desired value of D-gain
+    **/
     for (int i = 0; i < _EXPT_NUM_SERVOS; i++) {
         _pSerial->writeControlTableItem(POSITION_D_GAIN, i, val);
     }
 }
 
 void CrustCrawler::_clearBuffer() {
+    /**
+     * Method for clearing the buffer
+     * Reads all available data in the buffer and discards it
+     * **/
     while (_debug_pSerial->available()) {
         _debug_pSerial->read();
     }
 }
 
 void CrustCrawler::_statusPacket(uint16_t dataLength) {
+    /**
+     * Method for handling the statuspacket returned from the DyanmixelServo
+     * Unimplemented
+     * Par: dataLength: Expected length of the recieved data Packet
+     * **/
     //Unknown right now, verify the need for this function
 }
 
@@ -239,8 +384,16 @@ void CrustCrawler::_statusPacket(uint16_t dataLength) {
 }*/
 
 uint16_t CrustCrawler::_update_crc(uint8_t *arr, uint16_t length) {
+    /**
+     * Method for running a Cyclic Redundancy check on the sent and recieved data
+     * Unimplemented
+     * Par: *arr: array of data
+     * Par: length: Length of data
+     * **/
     uint16_t i, j = 0;
     uint16_t crc_accum = 0;
+
+    //Unknown crc_table: taken from Dynamixel2Arduino library
     uint16_t crc_table[256] = {0x0000, 0x8005, 0x800F, 0x000A, 0x801B, 0x001E,
                                0x0014, 0x8011, 0x8033, 0x0036, 0x003C, 0x8039, 0x0028, 0x802D,
                                0x8027, 0x0022, 0x8063, 0x0066, 0x006C, 0x8069, 0x0078, 0x807D,
