@@ -36,26 +36,30 @@ void CrustCrawler::init_arm(DynamixelShield &dxl_ser, HardwareSerial &debug_ser)
     _debug_pSerial = &debug_ser;
     CrustCrawler::setShadowID(4, _SHA_ID_GRIP);
     CrustCrawler::setShadowID(5, _SHA_ID_GRIP);
-    CrustCrawler::setExtremePositions(_ID_ARR[3], _ID_GRIP_EXPOS);
+    CrustCrawler::setExtremePositions(4, _ID_GRIP_EXPOS);
+    CrustCrawler::setExtremePositions(5, _ID_GRIP_EXPOS);
     CrustCrawler::setExtremePositions(_ID_ARR[0], _ID_ONE_EXPOS);
     CrustCrawler::setExtremePositions(_ID_ARR[1], _ID_TWO_EXPOS);
     CrustCrawler::setExtremePositions(_ID_ARR[2], _ID_THREE_EXPOS);
+    CrustCrawler::setPGain(_ID_ARR[1], 1300); 
+    CrustCrawler::setIGain(_ID_ARR[1], 300);
+    CrustCrawler::setDGain(_ID_ARR[1], 800);
+    CrustCrawler::setPGain(_ID_ARR[2], 1300); 
+    CrustCrawler::setIGain(_ID_ARR[2], 300);
+    CrustCrawler::setDGain(_ID_ARR[2], 800);
+    CrustCrawler::setProfileVel(1, 100);
+    CrustCrawler::setProfileVel(2, 100);
+    CrustCrawler::setProfileVel(3, 100);
     CrustCrawler::enableTorqueAll();
-    CrustCrawler::grip(false);
+    CrustCrawler::grip(true);
     CrustCrawler::move_joint(2, 2048);
     while (!(CrustCrawler::checkPos(2) < 2053 && CrustCrawler::checkPos(2) > 2038)) {
-        _debug_pSerial->print("Motor 2 position: ");
-        _debug_pSerial->println(CrustCrawler::checkPos(2));
     }
     CrustCrawler::move_joint(3, 1024);
     while (!(CrustCrawler::checkPos(3) < 1029 && CrustCrawler::checkPos(3) > 1019)) {
-        _debug_pSerial->print("Motor 3 position   ");
-        _debug_pSerial->println(CrustCrawler::checkPos(3));
     }
     CrustCrawler::move_joint(1, 3072);
-    while (!(CrustCrawler::checkPos(1) < 2058 && CrustCrawler::checkPos(1) > 2038)) {
-        _debug_pSerial->print("Motor 1 position   ");
-        _debug_pSerial->println(CrustCrawler::checkPos(1));
+    while (!(CrustCrawler::checkPos(1) < 3082 && CrustCrawler::checkPos(1) > 3062)) {
     }
 
 }
@@ -67,7 +71,7 @@ void CrustCrawler::shutdown_arm() {
      * Disables torque on all servos
      * **/
     _debug_pSerial->println("Initializing shutdown");
-    CrustCrawler::grip(false);
+    CrustCrawler::grip(true);
     CrustCrawler::move_joint(2, 2048);
     while (!(CrustCrawler::checkPos(2) < 2053 && CrustCrawler::checkPos(2) > 2038)) {
         _debug_pSerial->print("Motor 2 position: ");
@@ -79,7 +83,7 @@ void CrustCrawler::shutdown_arm() {
         _debug_pSerial->println(CrustCrawler::checkPos(3));
     }
     CrustCrawler::move_joint(1, 3072);
-    while (!(CrustCrawler::checkPos(1) < 517 && CrustCrawler::checkPos(1) > 507)) {
+    while (!(CrustCrawler::checkPos(1) < 3082 && CrustCrawler::checkPos(1) > 3062)) {
         _debug_pSerial->print("Motor 1 position: ");
         _debug_pSerial->println(CrustCrawler::checkPos(1));
     }
@@ -154,14 +158,16 @@ void CrustCrawler::grip(bool gripper) {
      * Par: gripper: boolean value true for gripper closed and false for gripper open
      * **/
     if (gripper) {                                                      //If gripper closed
-        CrustCrawler::move_joint(_SHA_ID_GRIP, _ID_GRIP_EXPOS[1]);
+        CrustCrawler::move_joint(4, _ID_GRIP_EXPOS[1]);
+        CrustCrawler::move_joint(5, _ID_GRIP_EXPOS[1]);
         _debug_pSerial->println("Gripper not open");                    //Print debugging messages
         _debug_pSerial->print("Motor 4 present position: ");
         _debug_pSerial->println(CrustCrawler::checkPos(4));
         _debug_pSerial->print("Motor 5 present position: ");
         _debug_pSerial->println(CrustCrawler::checkPos(5));
     } else if (!gripper) {                                              //If gripper open
-        CrustCrawler::move_joint(_SHA_ID_GRIP, _ID_GRIP_EXPOS[0]);
+        CrustCrawler::move_joint(4, _ID_GRIP_EXPOS[0]);
+        CrustCrawler::move_joint(5, _ID_GRIP_EXPOS[0]);
         _debug_pSerial->println("Gripper not closed");
         _debug_pSerial->print("Motor 4 present position: ");
         _debug_pSerial->println(CrustCrawler::checkPos(4));

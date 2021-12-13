@@ -29,7 +29,6 @@ using namespace ControlTableItem;
 char input = 0;
 int init_arm = 0;
 int motor_def = 1;
-bool gripper = true;
 unsigned long time_t;
 
 //Define CrustCrawler object
@@ -80,7 +79,7 @@ void loop() {
   }
   //Create a sampling time, here given as 10 ms
   //Runs only when 10 ms has passed since last check
-  if(millis()-time_t>=10) {
+  if(millis()-time_t>=20) {
 
     //If the user inputs a "Fist" and the arm is not initialized
     if (input == '1' && init_arm == 0)
@@ -94,48 +93,32 @@ void loop() {
     //If the user inputs fist and the arm is initialized
     else if (input == '1' && init_arm == 1) {
 
-      //Open the gripper 
-      if (gripper == false) {
-        //Initialize another time variable for checking position
-        unsigned long init_time_t = millis();
-
-        //Declare and assign position variables
-        uint16_t des_pos1 = crst.checkPos(4) + 20;
-        uint16_t des_pos2 = crst.checkPos(5) + 20;
-
-        //If the position of the CrustCrawler gripper is not at the maximum position
+        //If the position of the CrustCrawler gripper is not at the maximum position and is not at load 130
         //continue to open gripper
-        if (crst.checkPos(4) < 2000 && crst.checkPos(5) < 2000 && input == '1') {
-          crst.move_joint(4, des_pos1, 'R');
-          crst.move_joint(5, des_pos2, 'R');
-        }
-        //If the CrustCrawler gripper is close to the final position
-        //Assign the gripper variable to true
-        else if(millis()-init_time_t >= 10 && (crst.checkPos(4) < des_pos1-1 && crst.checkPos(5) < des_pos2-1)) {
-          gripper = true;
+        
+        if ((crst.checkPos(4) < 1990 && crst.checkPos(5) < 1990 && input == '1')) {
+                    if(dxl.readControlTableItem(PRESENT_LOAD, 4) > 130 && dxl.readControlTableItem(PRESENT_LOAD, 5) > 130) {
+          }
+          else {
+          crst.move_joint(4, crst.checkPos(4) + 20, 'R');
+          crst.move_joint(5, crst.checkPos(5) + 20, 'R');
+          }
         }
       }
       //Else if the gripper is open, close the gripper
-      else if (gripper == true) {
-        unsigned long init_time_t = millis();
-
-        //Declare and assign new position variables
-        uint16_t des_pos1 = crst.checkPos(4) - 20;
-        uint16_t des_pos2 = crst.checkPos(5) - 20;
+      else if (input == '7' && init_arm == 1) {
 
         //while the CrustCrawler is not at the closed end position continue
         //to close the gripper
-        if (crst.checkPos(4) > 1100 && crst.checkPos(5) > 1100 && input == '1') {
+        if ((crst.checkPos(4) > 1120 && crst.checkPos(5) > 1120 && input == '7')) {
+          if(dxl.readControlTableItem(PRESENT_LOAD, 4) > 130 && dxl.readControlTableItem(PRESENT_LOAD, 5) > 130) {
+          }
+          else {
           crst.move_joint(4, crst.checkPos(4) - 20, 'R');
           crst.move_joint(5, crst.checkPos(5) - 20, 'R');
-        }
-        //If CrustCrawler is close to end position of closed gripper
-        //Change gripper variable
-        else if((millis()-init_time_t >= 10 && (crst.checkPos(4) > des_pos1+1 && crst.checkPos(5) > des_pos2+1))) {
-        gripper = false;
+          }
         }
       }
-    }
     //If the user inputs "FingersSpread" change the controlled motor incrementally
     if (input == '2' && init_arm == 1) {
       if (motor_def < 3) {
@@ -145,6 +128,7 @@ void loop() {
         //If the motor value is above 3 set the motor value to 1 instead
         motor_def = 1;
       }
+      input = 0;
     }
     //If the user inputs "Wavein" move the selected motor 30 units clockwise
     else if (input == '3' && init_arm == 1) {
