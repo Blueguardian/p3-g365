@@ -47,9 +47,9 @@ void CrustCrawler::init_arm(DynamixelShield &dxl_ser, HardwareSerial &debug_ser)
     CrustCrawler::setPGain(_ID_ARR[2], 1300); 
     CrustCrawler::setIGain(_ID_ARR[2], 300);
     CrustCrawler::setDGain(_ID_ARR[2], 800);
-    CrustCrawler::setProfileVel(1, 100);
-    CrustCrawler::setProfileVel(2, 100);
-    CrustCrawler::setProfileVel(3, 100);
+    CrustCrawler::setProfileVel(1, 50);
+    CrustCrawler::setProfileVel(2, 50);
+    CrustCrawler::setProfileVel(3, 50);
     CrustCrawler::enableTorqueAll();
     CrustCrawler::grip(true);
     CrustCrawler::move_joint(2, 2048);
